@@ -4,4 +4,4 @@ This project uses the wayintop irrigation kit, as well as an adafruit MCP3008 AD
 
 For right now, you simply run the program, and it outputs the soil sensor data to nice bar graphs powered by the curses python library.
 
-
+	python3 irrigation_project.py
