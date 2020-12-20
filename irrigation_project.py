@@ -30,7 +30,7 @@ def get_sensor_data():
 	ch3 = chan3.voltage
 	return ch0, ch1, ch2, ch3
 
-def soil_data_loader(n=7): # returns n days worth of data 
+def load_soil_data(n=7): # returns n days worth of data 
 	with open('soil_data.txt', 'r') as soil_data:
 		soil_lines = soil_data.readlines()
 	soil_data.close()
@@ -38,7 +38,7 @@ def soil_data_loader(n=7): # returns n days worth of data
 	last_n = []
 	i = 1
 	num_lines = len(soil_lines)
-	while (i < n) and (i < num_lines):
+	while (i <= n) and (i < num_lines):
 		last_n.insert(0,soil_lines[num_lines-i].split(','))	
 		i += 1
 
@@ -64,7 +64,7 @@ def main(stdscr):
 	prev_ch0, prev_ch1, prev_ch2, prev_ch3 = get_sensor_data()
 
 	# previous soil data loaded here
-	last_n, days_old = soil_data_loader()
+	last_n, days_old = load_soil_data()
 	dates = []
 	times = []
 	s1_data = []
@@ -83,13 +83,14 @@ def main(stdscr):
 
 	# stdscr.addstr(height-3,1,last_n[len(last_n)-1][0])
 	# stdscr.addstr(height-4,1,str(days_old))
+	stdscr.addstr(height-20,1,str(days_old))
 
 	# gregarious monstera ascii art
 	with open('med_monstera.txt', 'r') as leaves:
 		leaf_array = leaves.read().split('\n')
 		i = height - len(leaf_array)
 		for row in leaf_array:	
-			stdscr.addstr(i, width - 60, row)
+			stdscr.addstr(i, width - 50, row)
 			i += 1		
 	leaves.close()
 
@@ -109,6 +110,7 @@ def main(stdscr):
 
 	# Use the 'q' key to quit
 	k = 0
+	written_to = False
 	while (k != ord('q')):
 		ch0_voltage, ch1_voltage, ch2_voltage, ch3_voltage = get_sensor_data() # get the data values
 		# these will hopefully cutdown on times that we render the graphs
@@ -133,7 +135,8 @@ def main(stdscr):
 		stdscr.addstr(1,width-10,now.strftime("%x"), curses.color_pair(1))
 		# write to csv once a day
 		# not sure the logic for this checks out...
-		if len(last_n) != 0:
+		# the written_to bool counts 
+		if len(last_n) != 0 and written_to == False:
 			if last_n[len(last_n)-1][0] != now.strftime("%x"):
 				with open('soil_data.txt', 'a') as soil_data:
 						soil_data.write(now.strftime("%x") + ',' 
@@ -141,6 +144,7 @@ def main(stdscr):
 							+ str(ch0_voltage) + ',' + str(ch1_voltage) + ',' 
 							+ str(ch2_voltage) + ',' + str(ch3_voltage) + "\n")
 				soil_data.close()
+				written_to = True
 
 		win1.border(0)
 		win2.border(0)
