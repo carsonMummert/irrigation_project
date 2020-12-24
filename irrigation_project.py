@@ -15,7 +15,7 @@ def load_soil_data(n=7): # returns n days worth of data
 	i = 1
 	num_lines = len(soil_lines)
 	while (i <= n) and (i < num_lines):
-		last_n.insert(0,soil_lines[num_lines-i].split(','))	
+		last_n.insert(0,soil_lines[num_lines-i].split(','))
 		i += 1
 
 	return last_n, (len(last_n))
@@ -23,9 +23,20 @@ def load_soil_data(n=7): # returns n days worth of data
 bar = '█' # an extended ASCII 'fill' character
 stdscr = curses.initscr() # create curses screen
 		
-def make_graph(window, dates, data, y_start=1, x_start=1):
-	# data => y range 1-10
-	
+def make_graph(window, height, width, dates, data, y_start=1, x_start=1):
+	# data => y range 0-8
+#Result = ((Input - InputLow) / (InputHigh - InputLow)) * (outputHigh - OutputLow) + OutputLow  
+	min_input = min(data)
+	max_input = max(data)
+	scaled_data = []
+	for val in data:
+		val_scaled = ((val - min_input) / (max_input - min_input)) * (7 - 0) + 0
+		scaled_data.append(int(val_scaled))
+	i = 0
+	while i < len(scaled_data):
+		window.addstr(8-scaled_data[i],i+1,"X")
+		stdscr.addstr(height-(3+i),1,str(scaled_data[i]))
+		i += 1
 	window.border(0)
 	pass
 	
@@ -59,10 +70,10 @@ def main(stdscr):
 	for line in last_n:
 		dates.append(line[0])
 		times.append(line[1])
-		s1_data.append(line[2])
-		s2_data.append(line[3])
-		s3_data.append(line[4])
-		s4_data.append(line[5])
+		s1_data.append(float(line[2]))
+		s2_data.append(float(line[3]))
+		s3_data.append(float(line[4]))
+		s4_data.append(float(line[5]))
 	stdscr.addstr(height-3,1,str(days_old))
 
 	# gregarious monstera ascii art
@@ -118,7 +129,7 @@ def main(stdscr):
 			stdscr.addstr(1,width-10,now.strftime("%x"), curses.color_pair(1))
 			# write to csv once a day
 			# not sure the logic for this checks out...
-			if len(last_n) != 0 and written_to_today == False:
+			if len(last_n) != 0:
 				if last_n[len(last_n)-1][0] != now.strftime("%x"):
 					with open('soil_data.txt', 'a') as soil_data:
 							soil_data.write(now.strftime("%x") + ',' 
@@ -126,9 +137,8 @@ def main(stdscr):
 								+ str(ch0_voltage) + ',' + str(ch1_voltage) + ',' 
 								+ str(ch2_voltage) + ',' + str(ch3_voltage) + "\n")
 					soil_data.close()
-					written_to = True
 
-			make_graph(win1, dates, s1_data)
+			make_graph(win1, height, width, dates, s1_data)
 			win2.border(0)
 			win3.border(0)
 			win4.border(0)
@@ -138,8 +148,8 @@ def main(stdscr):
 			stdscr.addstr(13,13,date_min, curses.color_pair(1))
 			stdscr.addstr(13,43,date_max, curses.color_pair(1))
 			
-			stdscr.addstr(4,48,max(s1_data)[0:5] + "V")
-			stdscr.addstr(11,48,min(s1_data)[0:5] + "V")
+			stdscr.addstr(4,48,"{:.5f}".format(max(s1_data)) + "V")
+			stdscr.addstr(11,48,"{:.5f}".format(min(s1_data)) + "V")
 
 			ch0_scaled = ((ch0_voltage - 0) / (4 - 0)) * (30 - 0) + 0
 			ch1_scaled = ((ch1_voltage - 0) / (4 - 0)) * (30 - 0) + 0
@@ -147,7 +157,7 @@ def main(stdscr):
 			ch3_scaled = ((ch3_voltage - 0) / (4 - 0)) * (30 - 0) + 0
 
 			# create bars bases on the returned values
-			win1.addstr(1, 1, bar * int(ch0_scaled), curses.color_pair(2))
+			#win1.addstr(1, 1, bar * int(ch0_scaled), curses.color_pair(2))
 			win1.refresh()
 			win2.addstr(1, 1, bar * int(ch1_scaled), curses.color_pair(3))
 			win2.refresh()
