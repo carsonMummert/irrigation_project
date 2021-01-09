@@ -14,9 +14,23 @@ chan2 = AnalogIn(mcp, MCP.P2)
 chan3 = AnalogIn(mcp, MCP.P3)
 
 # records soil values, which are being read continuously 
-def get_sensor_data():
+def get_all_data():
 	ch0 = chan0.voltage
 	ch1 = chan1.voltage
 	ch2 = chan2.voltage
 	ch3 = chan3.voltage
 	return ch0, ch1, ch2, ch3
+
+def get_sensor_data(sensor=0):
+	volts = 0.0
+	if sensor == 0:
+		volts = chan0.voltage
+	elif sensor == 1:
+		volts = chan1.voltage
+	elif sensor == 2:
+		volts = chan2.voltage
+	elif sensor == 3:
+		volts = chan3.voltage
+	else:
+		volts = -1
+	return volts
